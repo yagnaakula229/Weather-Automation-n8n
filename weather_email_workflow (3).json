@@ -1,0 +1,106 @@
+{
+  "name": "Daily Weather Email",
+  "nodes": [
+    {
+      "parameters": {
+        "triggerTimes": [
+          {
+            "hour": 9,
+            "minute": 0
+          }
+        ]
+      },
+      "id": "CronTrigger",
+      "name": "Cron Trigger",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "command": "python \"C:\\Users\\tinchu\\OneDrive\\Desktop\\n8n_automation\\api_to_sql.py\""
+      },
+      "id": "PythonScript",
+      "name": "Execute Python Script",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        400,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "return [{ json: JSON.parse($json[\"stdout\"]) }];"
+      },
+      "id": "ParseJSON",
+      "name": "Parse JSON",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        600,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "tinchu.2103@gmail.com",
+        "toEmail": "naaaishtam@gmail.com",
+        "subject": "Hyderabad Weather Update - {{$now.format(\"MMMM D, YYYY\")}}",
+        "text": "Weather Update \ud83c\udf26\ufe0f\n\nCity: {{$json[\"latest\"][\"city\"]}}\nTemperature: {{$json[\"latest\"][\"temperature\"]}}\u00b0C\nCondition: {{$json[\"latest\"][\"description\"]}}"
+      },
+      "id": "SendEmail",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 1,
+      "position": [
+        800,
+        300
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "YOUR_SMTP_CREDENTIAL_ID",
+          "name": "SMTP account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "CronTrigger": {
+      "main": [
+        [
+          {
+            "node": "Execute Python Script",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Python Script": {
+      "main": [
+        [
+          {
+            "node": "Parse JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse JSON": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
